@@ -29,7 +29,7 @@ class MarketDataGenerator(object):
 
     """
 
-    def __init__(self):
+    def __init__(self, log_every_day = 1):
         self.config = ConfigManager().get_instance()
         self.logger = LoggerManager().getLogger(__name__)
         self.filter = Filter()
@@ -37,6 +37,7 @@ class MarketDataGenerator(object):
         self.io_engine = IOEngine()
         self._intraday_code = -1
         self.days_expired_intraday_contract_download = -1
+        self.log_every_day = log_every_day
 
         return
 
@@ -87,7 +88,7 @@ class MarketDataGenerator(object):
 
         elif source == 'dukascopy':
             from findatapy.market.datavendorweb  import DataVendorDukasCopy
-            data_vendor = DataVendorDukasCopy()
+            data_vendor = DataVendorDukasCopy(log_every_day)
 
         elif source == 'fxcm':
             from findatapy.market.datavendorweb  import DataVendorFXCM
