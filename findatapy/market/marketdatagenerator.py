@@ -88,7 +88,7 @@ class MarketDataGenerator(object):
 
         elif source == 'dukascopy':
             from findatapy.market.datavendorweb  import DataVendorDukasCopy
-            data_vendor = DataVendorDukasCopy(log_every_day)
+            data_vendor = DataVendorDukasCopy(self.log_every_day)
 
         elif source == 'fxcm':
             from findatapy.market.datavendorweb  import DataVendorFXCM
