@@ -1151,12 +1151,13 @@ class DataVendorDukasCopy(DataVendor):
     """
     tick_name  = "{symbol}/{year}/{month}/{day}/{hour}h_ticks.bi5"
 
-    def __init__(self):
+    def __init__(self, log_every_day = 1):
         super(DataVendor, self).__init__()
         # self.logger = LoggerManager.getLogger(__name__)
         import logging
         logging.getLogger("requests").setLevel(logging.WARNING)
         self.config = ConfigManager()
+        self.log_every_day = log_every_day
 
     # implement method in abstract superclass
     def load_ticker(self, market_data_request):
@@ -1289,7 +1290,7 @@ class DataVendorDukasCopy(DataVendor):
 
     def fetch_file(self, time, symbol, do_retrieve_df):
         logger = LoggerManager.getLogger(__name__)
-        if time.hour % 24 == 0:
+        if time.hour % 24 == 0 and time.day % self.log_every_day == 0:
             logger.info("Downloading... " + str(time))
 
         tick_path = self.tick_name.format(
