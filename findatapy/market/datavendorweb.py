@@ -1187,7 +1187,8 @@ class DataVendorDukasCopy(DataVendor):
 
         # assume one ticker only (MarketDataGenerator only calls one ticker at a time)
         if (market_data_request.freq in ['tick']):
-            # market_data_request_vendor.tickers = market_data_request_vendor.tickers[0]
+            market_data_request_vendor.tickers = market_data_request.tickers
+            market_data_request_vendor.fields =  market_data_request.fields
 
             data_frame = self.get_tick(market_data_request, market_data_request_vendor)
 
@@ -1209,16 +1210,16 @@ class DataVendorDukasCopy(DataVendor):
         # convert from vendor to findatapy tickers/fields
         if data_frame is not None:
             returned_fields = data_frame.columns
-            returned_tickers = [market_data_request_vendor.tickers[0]] * (len(returned_fields))
+            returned_tickers = [market_data_request.tickers[0]] * (len(returned_fields))
 
         if data_frame is not None:
-            fields = self.translate_from_vendor_field(returned_fields, market_data_request)
+            fields = market_data_request.fields
             tickers = self.translate_from_vendor_ticker(returned_tickers, market_data_request)
 
             ticker_combined = []
 
             for i in range(0, len(fields)):
-                ticker_combined.append(tickers[i] + "." + fields[i])
+                ticker_combined.append(market_data_request.tickers[0] + "." + fields[i])
 
             data_frame.columns = ticker_combined
             data_frame.index.name = 'Date'
