@@ -1187,7 +1187,8 @@ class DataVendorDukasCopy(DataVendor):
 
         # assume one ticker only (MarketDataGenerator only calls one ticker at a time)
         if (market_data_request.freq in ['tick']):
-            # market_data_request_vendor.tickers = market_data_request_vendor.tickers[0]
+            market_data_request_vendor.tickers = market_data_request_vendor.tickers or market_data_request.tickers
+            market_data_request_vendor.fields = market_data_request_vendor.fields or market_data_request.fields
 
             data_frame = self.get_tick(market_data_request, market_data_request_vendor)
 
