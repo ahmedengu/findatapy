@@ -1,4 +1,4 @@
-__author__ = 'saeedamen' # Saeed Amen
+__author__ = 'saeedamen'  # Saeed Amen
 
 #
 # Copyright 2016 Cuemacro
@@ -41,6 +41,7 @@ from findatapy.market import IOEngine
 
 import pandas
 
+
 class DataVendorQuandl(DataVendor):
     """Reads in data from Quandl into findatapy library
 
@@ -52,7 +53,7 @@ class DataVendorQuandl(DataVendor):
     # implement method in abstract superclass
     def load_ticker(self, market_data_request):
         logger = LoggerManager().getLogger(__name__)
-        
+
         market_data_request_vendor = self.construct_vendor_market_data_request(market_data_request)
 
         logger.info("Request Quandl data")
@@ -69,12 +70,13 @@ class DataVendorQuandl(DataVendor):
             # tidy up tickers into a format that is more easily translatable
             # we can often get multiple fields returned (even if we don't ask for them!)
             # convert to lower case
-            returned_fields = [(x.split(' - ')[1]).lower().replace(' ', '-').replace('.', '-').replace('--', '-') for x in returned_tickers]
+            returned_fields = [(x.split(' - ')[1]).lower().replace(' ', '-').replace('.', '-').replace('--', '-') for x
+                               in returned_tickers]
 
-            returned_fields = [x.replace('value', 'close') for x in returned_fields]    # special case for close
+            returned_fields = [x.replace('value', 'close') for x in returned_fields]  # special case for close
 
             # quandl doesn't always return the field name
-            for i in range(0,len(returned_fields)):
+            for i in range(0, len(returned_fields)):
                 ticker = returned_tickers[i].split('/')[1].split(' - ')[0].lower()
 
                 if ticker == returned_fields[i]:
@@ -82,7 +84,7 @@ class DataVendorQuandl(DataVendor):
 
             # replace time fields (can cause problems later for times to start with 0)
             for i in range(0, 10):
-                returned_fields = [x.replace('0'+ str(i) + ':00', str(i) + ':00') for x in returned_fields]
+                returned_fields = [x.replace('0' + str(i) + ':00', str(i) + ':00') for x in returned_fields]
 
             returned_tickers = [x.replace('.', '/') for x in returned_tickers]
             returned_tickers = [x.split(' - ')[0] for x in returned_tickers]
@@ -110,25 +112,29 @@ class DataVendorQuandl(DataVendor):
 
     def download_daily(self, market_data_request):
         logger = LoggerManager().getLogger(__name__)
-        
+
         trials = 0
 
         data_frame = None
 
-        while(trials < 5):
+        while (trials < 5):
             try:
-                data_frame = Quandl.get(market_data_request.tickers, authtoken=DataConstants().quandl_api_key, trim_start=market_data_request.start_date,
+                data_frame = Quandl.get(market_data_request.tickers, authtoken=DataConstants().quandl_api_key,
+                                        trim_start=market_data_request.start_date,
                                         trim_end=market_data_request.finish_date)
 
                 break
             except Exception as e:
                 trials = trials + 1
-                logger.info("Attempting... " + str(trials) + " request to download from Quandl due to following error: " + str(e))
+                logger.info(
+                    "Attempting... " + str(trials) + " request to download from Quandl due to following error: " + str(
+                        e))
 
         if trials == 5:
             logger.error("Couldn't download from Quandl after several attempts!")
 
         return data_frame
+
 
 #######################################################################################################################
 
@@ -142,6 +148,7 @@ class DataVendorQuandl(DataVendor):
 from findatapy.market.datavendor import DataVendor
 from findatapy.timeseries import Filter, Calculations
 
+
 class DataVendorALFRED(DataVendor):
     """Class for reading in data from ALFRED (and FRED) into findatapy library (based upon fredapi from
     https://github.com/mortada/fredapi
@@ -154,7 +161,7 @@ class DataVendorALFRED(DataVendor):
     # implement method in abstract superclass
     def load_ticker(self, market_data_request):
         logger = LoggerManager().getLogger(__name__)
-        
+
         market_data_request_vendor = self.construct_vendor_market_data_request(market_data_request)
 
         logger.info("Request ALFRED/FRED data")
@@ -194,7 +201,7 @@ class DataVendorALFRED(DataVendor):
 
     def download_daily(self, market_data_request):
         logger = LoggerManager().getLogger(__name__)
-        
+
         trials = 0
 
         data_frame_list = []
@@ -215,7 +222,8 @@ class DataVendorALFRED(DataVendor):
                         data_frame.columns = ['Date', market_data_request.tickers[i] + '.release-date-time-full',
                                               market_data_request.tickers[i] + '.close']
 
-                        data_frame = data_frame.sort_values(by=['Date', market_data_request.tickers[i] + '.release-date-time-full'])
+                        data_frame = data_frame.sort_values(
+                            by=['Date', market_data_request.tickers[i] + '.release-date-time-full'])
                         data_frame = data_frame.drop_duplicates(subset=['Date'], keep='last')
                         data_frame = data_frame.set_index(['Date'])
 
@@ -256,7 +264,8 @@ class DataVendorALFRED(DataVendor):
                         data_frame.columns = ['Date', market_data_request.tickers[i] + '.release-date-time-full',
                                               market_data_request.tickers[i] + '.actual-release']
 
-                        data_frame = data_frame.sort_values(by=['Date', market_data_request.tickers[i] + '.release-date-time-full'])
+                        data_frame = data_frame.sort_values(
+                            by=['Date', market_data_request.tickers[i] + '.release-date-time-full'])
                         data_frame = data_frame.drop_duplicates(subset=['Date'], keep='first')
                         data_frame = data_frame.set_index(['Date'])
 
@@ -296,7 +305,8 @@ class DataVendorALFRED(DataVendor):
 
                         filter = Filter()
                         data_frame_release.append(filter.filter_time_series_by_date(market_data_request.start_date,
-                                                                       market_data_request.finish_date, data_frame))
+                                                                                    market_data_request.finish_date,
+                                                                                    data_frame))
 
                     break
                 except Exception as e:
@@ -343,7 +353,7 @@ class DataVendorONS(DataVendor):
             # we can often get multiple fields returned (even if we don't ask for them!)
             # convert to lower case
             returned_fields = [(x.split(' - ')[1]).lower().replace(' ', '-') for x in returned_tickers]
-            returned_fields = [x.replace('value', 'close') for x in returned_fields]    # special case for close
+            returned_fields = [x.replace('value', 'close') for x in returned_fields]  # special case for close
 
             returned_tickers = [x.replace('.', '/') for x in returned_tickers]
             returned_tickers = [x.split(' - ')[0] for x in returned_tickers]
@@ -368,7 +378,7 @@ class DataVendorONS(DataVendor):
 
         data_frame = None
 
-        while(trials < 5):
+        while (trials < 5):
             try:
                 # TODO
 
@@ -381,6 +391,7 @@ class DataVendorONS(DataVendor):
             logger.error("Couldn't download from ONS after several attempts!")
 
         return data_frame
+
 
 #######################################################################################################################
 
@@ -448,6 +459,7 @@ class DataVendorBOE(DataVendor):
 
         return data_frame
 
+
 #######################################################################################################################
 
 # for pandas 0.23 (necessary for older versions of pandas_datareader
@@ -465,6 +477,7 @@ except:
 
 from findatapy.market.datavendor import DataVendor
 
+
 class DataVendorPandasWeb(DataVendor):
     """Class for reading in data from various web sources into findatapy library including
 
@@ -478,7 +491,6 @@ class DataVendorPandasWeb(DataVendor):
 
     def __init__(self):
         super(DataVendorPandasWeb, self).__init__()
-
 
     # implement method in abstract superclass
     def load_ticker(self, market_data_request):
@@ -531,20 +543,21 @@ class DataVendorPandasWeb(DataVendor):
         return data_frame
 
     def download_daily(self, market_data_request):
-        return web.DataReader(market_data_request.tickers, market_data_request.data_source, market_data_request.start_date, market_data_request.finish_date)
+        return web.DataReader(market_data_request.tickers, market_data_request.data_source,
+                              market_data_request.start_date, market_data_request.finish_date)
+
 
 ########################################################################################################################
-
 
 
 ####Bitcoin####################################################################################################################
 
 from findatapy.market.datavendor import DataVendor
 
+
 class DataVendorBitcoincharts(DataVendor):
     """Class for reading in data from various web sources into findatapy library including
     """
-
 
     def __init__(self):
         super(DataVendorBitcoincharts, self).__init__()
@@ -555,21 +568,21 @@ class DataVendorBitcoincharts(DataVendor):
         market_data_request_vendor = self.construct_vendor_market_data_request(market_data_request)
 
         logger.info("Request data from Bitcoincharts")
-        
 
         data_website = 'http://api.bitcoincharts.com/v1/csv/' + market_data_request_vendor.tickers[0] + '.csv.gz'
-        data_frame = pandas.read_csv(data_website, names = ['datetime','close','volume'])
+        data_frame = pandas.read_csv(data_website, names=['datetime', 'close', 'volume'])
         data_frame = data_frame.set_index('datetime')
         data_frame.index = pandas.to_datetime(data_frame.index, unit='s')
         data_frame.index.name = 'Date'
-        data_frame = data_frame[(data_frame.index >= market_data_request_vendor.start_date) & (data_frame.index <= market_data_request_vendor.finish_date)]
-#        data_frame = df[~df.index.duplicated(keep='last')]
+        data_frame = data_frame[(data_frame.index >= market_data_request_vendor.start_date) & (
+                    data_frame.index <= market_data_request_vendor.finish_date)]
+        #        data_frame = df[~df.index.duplicated(keep='last')]
         if (len(data_frame) == 0):
             print('###############################################################')
             print('Warning: No data. Please change the start_date and finish_date.')
             print('###############################################################')
 
-        data_frame.columns = [market_data_request.tickers[0]+'.close', market_data_request.tickers[0]+'.volume']
+        data_frame.columns = [market_data_request.tickers[0] + '.close', market_data_request.tickers[0] + '.volume']
         logger.info("Completed request from Bitcoincharts.")
 
         return data_frame
@@ -580,10 +593,10 @@ class DataVendorBitcoincharts(DataVendor):
 
 from findatapy.market.datavendor import DataVendor
 
+
 class DataVendorPoloniex(DataVendor):
     """Class for reading in data from various web sources into findatapy library including
     """
-
 
     def __init__(self):
         super(DataVendorPoloniex, self).__init__()
@@ -595,8 +608,6 @@ class DataVendorPoloniex(DataVendor):
         market_data_request_vendor = self.construct_vendor_market_data_request(market_data_request)
 
         self.logger.info("Request data from Poloniex")
-        
-
 
         poloniex_url = 'https://poloniex.com/public?command=returnChartData&currencyPair={}&start={}&end={}&period={}'
         if market_data_request_vendor.freq == 'intraday':
@@ -616,18 +627,18 @@ class DataVendorPoloniex(DataVendor):
             print('Warning: No data. Please change the start_date and finish_date.')
             print('###############################################################')
 
-        data_frame.columns = [market_data_request.tickers[0]+'.close',
-                              market_data_request.tickers[0]+'.high',
-                              market_data_request.tickers[0]+'.low',
-                              market_data_request.tickers[0]+'.open',
-                              market_data_request.tickers[0]+'.quote-volume',
-                              market_data_request.tickers[0]+'.volume',
-                              market_data_request.tickers[0]+'.weighted-average']
+        data_frame.columns = [market_data_request.tickers[0] + '.close',
+                              market_data_request.tickers[0] + '.high',
+                              market_data_request.tickers[0] + '.low',
+                              market_data_request.tickers[0] + '.open',
+                              market_data_request.tickers[0] + '.quote-volume',
+                              market_data_request.tickers[0] + '.volume',
+                              market_data_request.tickers[0] + '.weighted-average']
 
         field_selected = []
-        for i in range(0,len(market_data_request_vendor.fields)):
+        for i in range(0, len(market_data_request_vendor.fields)):
             field_selected.append(0)
-            field_selected[-1] = market_data_request.tickers[0]+'.'+market_data_request_vendor.fields[i]
+            field_selected[-1] = market_data_request.tickers[0] + '.' + market_data_request_vendor.fields[i]
 
         logger.info("Completed request from Poloniex")
 
@@ -643,6 +654,7 @@ from findatapy.market.datavendor import DataVendor
 class DataVendorBinance(DataVendor):
     """Class for reading in data from various web sources into findatapy library including
     """
+
     # Data limit = 500
 
     def __init__(self):
@@ -671,10 +683,10 @@ class DataVendorBinance(DataVendor):
         while stop_flag == 0:
             if stop_flag == 1:
                 break
-            json_url = binance_url.format(market_data_request_vendor.tickers[0],period,start_time,finish_time)
+            json_url = binance_url.format(market_data_request_vendor.tickers[0], period, start_time, finish_time)
             data_read = pandas.read_json(json_url)
             if (len(data_read) < 500):
-                if ((len(data_read)== 0) & (len(data_frame)==0)):
+                if ((len(data_read) == 0) & (len(data_frame) == 0)):
                     print('###############################################################')
                     print('Warning: No data. Please change the start_date and finish_date.')
                     print('###############################################################')
@@ -688,11 +700,11 @@ class DataVendorBinance(DataVendor):
         if (len(data_frame) == 0):
             return data_frame
 
-        data_frame.columns = ['open-time','open','high','low','close','volume','close-time','quote-asset-volume',
-                                  'trade-numbers','taker-buy-base-asset-volume','taker-buy-quote-asset-volume','ignore']
-        data_frame['open-time'] = data_frame['open-time']/1000
+        data_frame.columns = ['open-time', 'open', 'high', 'low', 'close', 'volume', 'close-time', 'quote-asset-volume',
+                              'trade-numbers', 'taker-buy-base-asset-volume', 'taker-buy-quote-asset-volume', 'ignore']
+        data_frame['open-time'] = data_frame['open-time'] / 1000
         data_frame = data_frame.set_index('open-time')
-        data_frame = data_frame.drop(['close-time','ignore'], axis=1)
+        data_frame = data_frame.drop(['close-time', 'ignore'], axis=1)
         data_frame.index.name = 'Date'
         data_frame.index = pandas.to_datetime(data_frame.index, unit='s')
         data_frame.columns = [market_data_request.tickers[0] + '.open',
@@ -714,6 +726,7 @@ class DataVendorBinance(DataVendor):
 
         return data_frame[field_selected]
 
+
 #########################################################################################################
 
 
@@ -723,6 +736,7 @@ from findatapy.market.datavendor import DataVendor
 class DataVendorBitfinex(DataVendor):
     """Class for reading in data from various web sources into findatapy library including
     """
+
     # Data limit = 1000
 
     def __init__(self):
@@ -735,7 +749,6 @@ class DataVendorBitfinex(DataVendor):
 
         logger.info("Request data from Bitfinex.")
 
-        
         import time
         bitfinex_url = 'https://api.bitfinex.com/v2/candles/trade:{}:t{}/hist?start={}&end={}&limit=1000&sort=1'
         if market_data_request_vendor.freq == 'intraday':
@@ -753,7 +766,7 @@ class DataVendorBitfinex(DataVendor):
             json_url = bitfinex_url.format(period, market_data_request_vendor.tickers[0], start_time, finish_time)
             data_read = pandas.read_json(json_url)
             if (len(data_read) < 1000):
-                if ((len(data_read)== 0) & (len(data_frame)==0)):
+                if ((len(data_read) == 0) & (len(data_frame) == 0)):
                     break
                 else:
                     stop_flag = 1
@@ -780,7 +793,6 @@ class DataVendorBitfinex(DataVendor):
                               market_data_request.tickers[0] + '.low',
                               market_data_request.tickers[0] + '.volume']
 
-
         field_selected = []
         for i in range(0, len(market_data_request_vendor.fields)):
             field_selected.append(0)
@@ -789,8 +801,6 @@ class DataVendorBitfinex(DataVendor):
         logger.info("Completed request from Bitfinex.")
 
         return data_frame[field_selected]
-
-
 
 
 #########################################################################################################
@@ -802,6 +812,7 @@ from findatapy.market.datavendor import DataVendor
 class DataVendorGdax(DataVendor):
     """Class for reading in data from various web sources into findatapy library including
     """
+
     # Data limit = 350
 
     def __init__(self):
@@ -815,7 +826,6 @@ class DataVendorGdax(DataVendor):
 
         logger.info("Request data from Gdax.")
 
-        
         from datetime import datetime
         from datetime import timedelta
         import time
@@ -840,10 +850,11 @@ class DataVendorGdax(DataVendor):
             if data_end_time > end_time:
                 data_end_time = end_time
                 stop_flag = 1
-            json_url = gdax_url.format(market_data_request_vendor.tickers[0], start_time.isoformat(), data_end_time.isoformat(), period)
+            json_url = gdax_url.format(market_data_request_vendor.tickers[0], start_time.isoformat(),
+                                       data_end_time.isoformat(), period)
             data_read = pandas.read_json(json_url)
             data_frame = data_frame.append(data_read)
-            if (len(data_read)==0):
+            if (len(data_read) == 0):
                 start_time = data_end_time
             else:
                 start_time = pandas.to_datetime(int(data_read[0].head(1)), unit='s')
@@ -881,9 +892,11 @@ class DataVendorGdax(DataVendor):
 
 from findatapy.market.datavendor import DataVendor
 
+
 class DataVendorKraken(DataVendor):
     """Class for reading in data from various web sources into findatapy library including
     """
+
     # Data limit : can only get the most recent 720 rows for klines
     # Collect data from all trades data
 
@@ -897,17 +910,16 @@ class DataVendorKraken(DataVendor):
 
         logger.info("Request data from Kraken.")
 
-        
         import json
         import requests
         import time
         import datetime
         from datetime import datetime
 
-        #kraken_url = 'https://api.kraken.com/0/public/OHLC?pair={}&interval={}&since=0'
-        #if market_data_request_vendor.freq == 'intraday':
+        # kraken_url = 'https://api.kraken.com/0/public/OHLC?pair={}&interval={}&since=0'
+        # if market_data_request_vendor.freq == 'intraday':
         #    period = 1
-        #if market_data_request_vendor.freq == 'daily':
+        # if market_data_request_vendor.freq == 'daily':
         #    period = 1440
         start_time = int(market_data_request_vendor.start_date.timestamp() * 1e9)
         end_time = int(market_data_request_vendor.finish_date.timestamp() * 1e9)
@@ -929,11 +941,11 @@ class DataVendorKraken(DataVendor):
             data_list = list(data_read['result'])[0]
             data_read = data_read['result'][data_list]
             df = pandas.DataFrame(data_read,
-                              columns=['close', 'volume', 'time', 'buy-sell', 'market-limit', 'miscellaneous'])
+                                  columns=['close', 'volume', 'time', 'buy-sell', 'market-limit', 'miscellaneous'])
             start_time = int(df['time'].tail(1) * 1e9)
             if (start_time > end_time):
                 stop_flag = 1
-            if (end_time < int(df['time'].head(1)*1e9)):
+            if (end_time < int(df['time'].head(1) * 1e9)):
                 stop_flag = 1
             data_frame = data_frame.append(df)
             time.sleep(5)
@@ -944,22 +956,21 @@ class DataVendorKraken(DataVendor):
         data_frame = data_frame.drop(['miscellaneous'], axis=1)
         data_frame.replace(['b', 's', 'm', 'l'], [1, -1, 1, -1], inplace=True)
         data_frame = data_frame[(data_frame.index >= market_data_request_vendor.start_date) & (
-                                 data_frame.index <= market_data_request_vendor.finish_date)]
+                data_frame.index <= market_data_request_vendor.finish_date)]
         if (len(data_frame) == 0):
             print('###############################################################')
             print('Warning: No data. Please change the start_date and finish_date.')
             print('###############################################################')
 
-        data_frame.columns = [market_data_request.tickers[0]+'.close',
-                              market_data_request.tickers[0]+'.volume',
-                              market_data_request.tickers[0]+'.buy-sell',
-                              market_data_request.tickers[0]+'.market-limit']
+        data_frame.columns = [market_data_request.tickers[0] + '.close',
+                              market_data_request.tickers[0] + '.volume',
+                              market_data_request.tickers[0] + '.buy-sell',
+                              market_data_request.tickers[0] + '.market-limit']
 
         field_selected = []
-        for i in range(0,len(market_data_request_vendor.fields)):
+        for i in range(0, len(market_data_request_vendor.fields)):
             field_selected.append(0)
-            field_selected[-1] = market_data_request.tickers[0]+'.'+market_data_request_vendor.fields[i]
-
+            field_selected[-1] = market_data_request.tickers[0] + '.' + market_data_request_vendor.fields[i]
 
         self.logger.info("Completed request from Kraken.")
 
@@ -971,6 +982,7 @@ class DataVendorKraken(DataVendor):
 class DataVendorBitmex(DataVendor):
     """Class for reading in data from various web sources into findatapy library including
     """
+
     # Data limit = 500,  150 calls / 5 minutes
 
     def __init__(self):
@@ -983,7 +995,6 @@ class DataVendorBitmex(DataVendor):
 
         logger.info("Request data from Bitmex.")
 
-        
         import time
 
         bitMEX_url = 'https://www.bitmex.com/api/v1/quote?symbol={}&count=500&reverse=false&startTime={}&endTime={}'
@@ -991,7 +1002,7 @@ class DataVendorBitmex(DataVendor):
         start_time = market_data_request_vendor.start_date.timestamp()
         finish_time = market_data_request_vendor.finish_date.timestamp()
         symbol = market_data_request_vendor.tickers[0]
-        
+
         stop_flag = 0
         while stop_flag == 0:
             if stop_flag == 1:
@@ -999,7 +1010,7 @@ class DataVendorBitmex(DataVendor):
             json_url = bitMEX_url.format(symbol, start_time.isoformat(), finish_time.isoformat())
             data_read = pandas.read_json(json_url)
             if (len(data_read) < 500):
-                    stop_flag = 1
+                stop_flag = 1
             data_frame = data_frame.append(data_read)
             start_time = data_read['timestamp'][data_frame.index[-1]]
             time.sleep(2)
@@ -1020,7 +1031,6 @@ class DataVendorBitmex(DataVendor):
                               market_data_request.tickers[0] + '.bid-price',
                               market_data_request.tickers[0] + '.bid-size']
 
-
         field_selected = []
         for i in range(0, len(market_data_request_vendor.fields)):
             field_selected.append(0)
@@ -1034,6 +1044,7 @@ class DataVendorBitmex(DataVendor):
 class DataVendorHuobi(DataVendor):
     """Class for reading in data from various web sources into findatapy library including
     """
+
     # Data limit = 500,  150 calls / 5 minutes
 
     def __init__(self):
@@ -1042,11 +1053,11 @@ class DataVendorHuobi(DataVendor):
     # implement method in abstract superclass
     def load_ticker(self, market_data_request):
         logger = LoggerManager().getLogger(__name__)
-        
+
         import requests
-        
+
         import json
-        
+
         def _calc_period_size(freq, start_dt, finish_dt):
             actual_window = finish_dt - start_dt
             extra_window = datetime.datetime.now() - finish_dt
@@ -1077,7 +1088,8 @@ class DataVendorHuobi(DataVendor):
             market_data_request_vendor.finish_date)
 
         if request_size > 2000:
-            raise ValueError("Requested data too old for candle-stick frequency of '{}'".format(market_data_request_vendor.freq))
+            raise ValueError(
+                "Requested data too old for candle-stick frequency of '{}'".format(market_data_request_vendor.freq))
 
         url = "https://api.huobi.pro/market/history/kline?period={period}&size={size}&symbol={symbol}".format(
             period=period,
@@ -1113,8 +1125,6 @@ class DataVendorHuobi(DataVendor):
         return df
 
 
-
-
 #########################################################################################################
 
 
@@ -1140,6 +1150,7 @@ from findatapy.market.datavendor import DataVendor
 # for logging and constants
 from findatapy.util import ConfigManager, DataConstants, LoggerManager
 
+
 class DataVendorDukasCopy(DataVendor):
     """Class for downloading tick data from DukasCopy (note: past month of data is not available). Selecting very large
     histories is not recommended as you will likely run out memory given the amount of data requested.
@@ -1149,9 +1160,9 @@ class DataVendorDukasCopy(DataVendor):
         on-the-fly downloading/parsing
 
     """
-    tick_name  = "{symbol}/{year}/{month}/{day}/{hour}h_ticks.bi5"
+    tick_name = "{symbol}/{year}/{month}/{day}/{hour}h_ticks.bi5"
 
-    def __init__(self, log_every_day = 1):
+    def __init__(self, log_every_day=1):
         super(DataVendor, self).__init__()
         # self.logger = LoggerManager.getLogger(__name__)
         import logging
@@ -1180,15 +1191,15 @@ class DataVendorDukasCopy(DataVendor):
         logger.info("Request Dukascopy data")
 
         # doesn't support non-tick data
-        if (market_data_request.freq in ['daily', 'weekly', 'monthly', 'quarterly', 'yearly', 'intraday', 'minute', 'hourly']):
+        if (market_data_request.freq in ['daily', 'weekly', 'monthly', 'quarterly', 'yearly', 'intraday', 'minute',
+                                         'hourly']):
             logger.warning("Dukascopy loader is for tick data only")
 
             return None
 
         # assume one ticker only (MarketDataGenerator only calls one ticker at a time)
         if (market_data_request.freq in ['tick']):
-            market_data_request_vendor.tickers = market_data_request.tickers
-            market_data_request_vendor.fields =  market_data_request.fields
+            # market_data_request_vendor.tickers = market_data_request_vendor.tickers[0]
 
             data_frame = self.get_tick(market_data_request, market_data_request_vendor)
 
@@ -1210,16 +1221,16 @@ class DataVendorDukasCopy(DataVendor):
         # convert from vendor to findatapy tickers/fields
         if data_frame is not None:
             returned_fields = data_frame.columns
-            returned_tickers = [market_data_request.tickers[0]] * (len(returned_fields))
+            returned_tickers = [market_data_request_vendor.tickers[0]] * (len(returned_fields))
 
         if data_frame is not None:
-            fields = market_data_request.fields
+            fields = self.translate_from_vendor_field(returned_fields, market_data_request)
             tickers = self.translate_from_vendor_ticker(returned_tickers, market_data_request)
 
             ticker_combined = []
 
             for i in range(0, len(fields)):
-                ticker_combined.append(market_data_request.tickers[0] + "." + fields[i])
+                ticker_combined.append(tickers[i] + "." + fields[i])
 
             data_frame.columns = ticker_combined
             data_frame.index.name = 'Date'
@@ -1242,7 +1253,7 @@ class DataVendorDukasCopy(DataVendor):
         time_list = self.hour_range(market_data_request.start_date, market_data_request.finish_date)
 
         do_retrieve_df = True  # convert inside loop?
-        multi_threaded = False # multithreading (can sometimes get errors but it's fine when retried)
+        multi_threaded = False  # multithreading (can sometimes get errors but it's fine when retried)
 
         if multi_threaded:
             # use threading (not process interface)
@@ -1295,16 +1306,16 @@ class DataVendorDukasCopy(DataVendor):
             logger.info("Downloading... " + str(time))
 
         tick_path = self.tick_name.format(
-                symbol = symbol,
-                year = str(time.year).rjust(4, '0'),
-                month = str(time.month-1).rjust(2, '0'),
-                day = str(time.day).rjust(2, '0'),
-                hour = str(time.hour).rjust(2, '0')
-            )
+            symbol=symbol,
+            year=str(time.year).rjust(4, '0'),
+            month=str(time.month - 1).rjust(2, '0'),
+            day=str(time.day).rjust(2, '0'),
+            hour=str(time.hour).rjust(2, '0')
+        )
 
         tick = self.fetch_tick(DataConstants().dukascopy_base_url + tick_path)
 
-        #print(tick_path)
+        # print(tick_path)
         if DataConstants().dukascopy_write_temp_tick_disk:
             out_path = DataConstants().temp_folder + "/dkticks/" + tick_path
 
@@ -1318,8 +1329,8 @@ class DataVendorDukasCopy(DataVendor):
             try:
                 return self.retrieve_df(lzma.decompress(tick), symbol, time)
             except Exception as e:
-                #print(tick_path + ' ' + str(e))
-                #print(str(e))
+                # print(tick_path + ' ' + str(e))
+                # print(str(e))
                 return None
 
         return tick
@@ -1335,7 +1346,7 @@ class DataVendorDukasCopy(DataVendor):
         # try up to 5 times to download
         while i < 20:
             try:
-                tick_request = requests.get(tick_url, timeout = 10)
+                tick_request = requests.get(tick_url, timeout=10)
 
                 tick_request_content = tick_request.content
                 tick_request.close()
@@ -1369,8 +1380,8 @@ class DataVendorDukasCopy(DataVendor):
     def retrieve_df(self, data, symbol, epoch):
         date, tuple = self.parse_tick_data(data, epoch)
 
-        df = pandas.DataFrame(data = tuple, columns=['temp', 'ask', 'bid', 'askv', 'bidv'], index = date)
-        df.drop('temp', axis = 1)
+        df = pandas.DataFrame(data=tuple, columns=['temp', 'ask', 'bid', 'askv', 'bidv'], index=date)
+        df.drop('temp', axis=1)
         df.index.name = 'Date'
 
         divisor = 100000.0
@@ -1384,18 +1395,18 @@ class DataVendorDukasCopy(DataVendor):
             divisor = 1000.0
 
         # prices are returned without decimal point (need to divide)
-        df['bid'] =  df['bid'] / divisor
-        df['ask'] =  df['ask'] / divisor
+        df['bid'] = df['bid'] / divisor
+        df['ask'] = df['ask'] / divisor
 
         return df
 
     def hour_range(self, start_date, end_date):
-          delta_t = end_date - start_date
+        delta_t = end_date - start_date
 
-          delta_hours = (delta_t.days *  24.0) + (delta_t.seconds / 3600.0)
+        delta_hours = (delta_t.days * 24.0) + (delta_t.seconds / 3600.0)
 
-          for n in range(int (delta_hours)):
-              yield start_date + timedelta(0, 0, 0, 0, 0, n) # Hours
+        for n in range(int(delta_hours)):
+            yield start_date + timedelta(0, 0, 0, 0, 0, n)  # Hours
 
     def parse_tick_data(self, data, epoch):
         import struct
@@ -1409,8 +1420,8 @@ class DataVendorDukasCopy(DataVendor):
         # note: Numba can speed up for loops
         for row in chunks_list:
             d = struct.unpack(">LLLff", row)
-            #d = struct.unpack('>3i2f', row)
-            date.append((epoch + timedelta(0,0,0, d[0])))
+            # d = struct.unpack('>3i2f', row)
+            date.append((epoch + timedelta(0, 0, 0, d[0])))
 
             # SLOW: no point using named tuples!
             # row_data = tick._asdict(tick._make(d))
@@ -1428,6 +1439,7 @@ class DataVendorDukasCopy(DataVendor):
     def get_daily_data(self):
         pass
 
+
 ########################################################################################################################
 
 ##from StringIO import StringIO
@@ -1435,7 +1447,6 @@ from io import BytesIO
 import gzip
 import urllib
 import datetime
-
 
 
 ##Available Currencies
@@ -1452,7 +1463,7 @@ class DataVendorFXCM(DataVendor):
 
     """
 
-    url_suffix = '.csv.gz' ##Extension of the file name
+    url_suffix = '.csv.gz'  ##Extension of the file name
 
     def __init__(self):
         super(DataVendor, self).__init__()
@@ -1482,7 +1493,8 @@ class DataVendorFXCM(DataVendor):
         self.logger.info("Request FXCM data")
 
         # doesn't support non-tick data
-        if (market_data_request.freq in ['daily', 'weekly', 'monthly', 'quarterly', 'yearly', 'intraday', 'minute', 'hourly']):
+        if (market_data_request.freq in ['daily', 'weekly', 'monthly', 'quarterly', 'yearly', 'intraday', 'minute',
+                                         'hourly']):
             self.logger.warning("FXCM loader is for tick data only")
 
             return None
@@ -1587,7 +1599,8 @@ class DataVendorFXCM(DataVendor):
                     # slightly awkward date parser (much faster than using other Python methods)
                     # TODO use ciso8601 library (uses C parser, slightly quicker)
                     dateparse = lambda x: datetime.datetime(int(x[6:10]), int(x[0:2]), int(x[3:5]),
-                                                   int(x[11:13]), int(x[14:16]), int(x[17:19]), int(x[20:23])*1000)
+                                                            int(x[11:13]), int(x[14:16]), int(x[17:19]),
+                                                            int(x[20:23]) * 1000)
 
                     data_frame = pandas.read_csv(StringIO(f.read().decode('utf-16')), index_col=0, parse_dates=True,
                                                  date_parser=dateparse)
@@ -1608,7 +1621,7 @@ class DataVendorFXCM(DataVendor):
 
     def week_range(self, start_date, finish_date):
 
-        weeks = pandas.bdate_range(start_date - timedelta(days=7), finish_date+timedelta(days=7), freq='W')
+        weeks = pandas.bdate_range(start_date - timedelta(days=7), finish_date + timedelta(days=7), freq='W')
 
         week_year = []
 
@@ -1631,6 +1644,7 @@ class DataVendorFXCM(DataVendor):
     def get_daily_data(self):
         pass
 
+
 ########################################################################################################################
 
 import os
@@ -1648,6 +1662,7 @@ else:
     from urllib import urlencode
 
 import xml.etree.ElementTree as ET
+
 
 class Fred(object):
     """Auxillary class for getting access to ALFRED/FRED directly.
@@ -1708,7 +1723,7 @@ class Fred(object):
         from pandas import to_datetime
         rv = to_datetime(date_str, format=format)
         if hasattr(rv, 'to_datetime'):
-            rv = rv.to_pydatetime()         # to_datetime is depreciated
+            rv = rv.to_pydatetime()  # to_datetime is depreciated
         return rv
 
     def get_series_info(self, series_id):
@@ -1812,7 +1827,8 @@ class Fred(object):
         data : Series
             a Series where each index is the observation date and the value is the data for the Fred series
         """
-        df = self.get_series_all_releases(series_id, observation_start=observation_start, observation_end=observation_end)
+        df = self.get_series_all_releases(series_id, observation_start=observation_start,
+                                          observation_end=observation_end)
         first_release = df.groupby('date').head(1)
         data = first_release.set_index('date')['value']
         return data
@@ -1834,7 +1850,8 @@ class Fred(object):
         data : Series
             a Series where each index is the observation date and the value is the data for the Fred series
         """
-        df = self.get_series_all_releases(series_id, observation_start=observation_start, observation_end=observation_end)
+        df = self.get_series_all_releases(series_id, observation_start=observation_start,
+                                          observation_end=observation_end)
         first_revision = df.groupby('date').head(2)
         data = first_revision.set_index('date')['value']
         data = data[~data.index.duplicated(keep='last')]
@@ -1960,7 +1977,8 @@ class Fred(object):
         data = {}
 
         num_results_returned = 0  # number of results returned in this HTTP request
-        num_results_total = int(root.get('count'))  # total number of results, this can be larger than number of results returned
+        num_results_total = int(
+            root.get('count'))  # total number of results, this can be larger than number of results returned
         for child in root.getchildren():
             num_results_returned += 1
             series_id = child.get('id')
@@ -1996,14 +2014,16 @@ class Fred(object):
             if order_by in order_by_options:
                 url = url + '&order_by=' + order_by
             else:
-                raise ValueError('%s is not in the valid list of order_by options: %s' % (order_by, str(order_by_options)))
+                raise ValueError(
+                    '%s is not in the valid list of order_by options: %s' % (order_by, str(order_by_options)))
 
         sort_order_options = ['asc', 'desc']
         if sort_order is not None:
             if sort_order in sort_order_options:
                 url = url + '&sort_order=' + sort_order
             else:
-                raise ValueError('%s is not in the valid list of sort_order options: %s' % (sort_order, str(sort_order_options)))
+                raise ValueError(
+                    '%s is not in the valid list of sort_order options: %s' % (sort_order, str(sort_order_options)))
 
         data, num_results_total = self.__do_series_search(url)
         if data is None:
@@ -2112,6 +2132,7 @@ class Fred(object):
             raise ValueError('No series exists for category id: ' + str(category_id))
         return info
 
+
 ########################################################################################################################
 
 class DataVendorFlatFile(DataVendor):
@@ -2132,10 +2153,10 @@ class DataVendorFlatFile(DataVendor):
         self.logger.info("Request " + market_data_request.data_source + " data")
 
         if ".csv" in market_data_request.data_source:
-            data_frame = pandas.read_csv(market_data_request.data_source, index_col = 0, parse_dates = True,
-                                         infer_datetime_format = True)
+            data_frame = pandas.read_csv(market_data_request.data_source, index_col=0, parse_dates=True,
+                                         infer_datetime_format=True)
         elif ".h5" in market_data_request.data_source:
-            data_frame = IOEngine().read_time_series_cache_from_disk(market_data_request.data_source, engine = 'hdf5')
+            data_frame = IOEngine().read_time_series_cache_from_disk(market_data_request.data_source, engine='hdf5')
 
         if data_frame is None or data_frame.index is []: return None
 
@@ -2161,9 +2182,11 @@ class DataVendorFlatFile(DataVendor):
 
         return data_frame
 
+
 ########################################################################################################################
 
 from alpha_vantage.timeseries import TimeSeries
+
 
 class DataVendorAlphaVantage(DataVendor):
     """Reads in data from Alpha Vantage into findatapy library
@@ -2225,28 +2248,32 @@ class DataVendorAlphaVantage(DataVendor):
 
         data_frame = None
 
-        while(trials < 5):
+        while (trials < 5):
             try:
                 if market_data_request.freq == 'intraday':
-                    data_frame = ts.get_intraday(symbol=market_data_request.tickers,interval='1min', outputsize='full')
+                    data_frame = ts.get_intraday(symbol=market_data_request.tickers, interval='1min', outputsize='full')
                 else:
                     data_frame = ts.get_daily(symbol=market_data_request.tickers, outputsize='full')
 
                 break
             except Exception as e:
                 trials = trials + 1
-                self.logger.info("Attempting... " + str(trials) + " request to download from Alpha Vantage due to following error: " + str(e))
+                self.logger.info("Attempting... " + str(
+                    trials) + " request to download from Alpha Vantage due to following error: " + str(e))
 
         if trials == 5:
             self.logger.error("Couldn't download from Alpha Vantage after several attempts!")
 
         return data_frame
 
+
 ########################################################################################################################
 
 try:
     import fxcmpy
-except: pass
+except:
+    pass
+
 
 class DataVendorFXCMPY(DataVendor):
     """Reads in data from FXCM data using fxcmpy into findatapy library. Can be used for minute or daily data. For
@@ -2316,16 +2343,17 @@ class DataVendorFXCMPY(DataVendor):
         else:
             per = 'D1'
 
-        tickers = [t[0:4] +"/" + t[4:7] for t in market_data_request.tickers]
+        tickers = [t[0:4] + "/" + t[4:7] for t in market_data_request.tickers]
 
-        while(trials < 5):
+        while (trials < 5):
             try:
                 data_frame = con.get_candles(tickers, period=per,
-                                start=market_data_request.start_date, stop=market_data_request.finish_date)
+                                             start=market_data_request.start_date, stop=market_data_request.finish_date)
                 break
             except Exception as e:
                 trials = trials + 1
-                self.logger.info("Attempting... " + str(trials) + " request to download from FXCM due to following error: " + str(e))
+                self.logger.info(
+                    "Attempting... " + str(trials) + " request to download from FXCM due to following error: " + str(e))
 
         if trials == 5:
             self.logger.error("Couldn't download from FXCM after several attempts!")
